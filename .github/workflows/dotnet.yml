@@ -1,0 +1,29 @@
+name: Build Celeste 64
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        dotnet-version: [ '8.0' ]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Test with dotnet
+        run: dotnet publish Celeste64.csproj --self-contained true --property:PublishDir=Celeste64
+      - name: Upload dotnet test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-results-${{ matrix.dotnet-version }}
+          path: Celeste64
+        # Use always() to always run this step to publish test results when there are test failures
+        if: ${{ always() }}
